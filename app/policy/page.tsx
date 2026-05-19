@@ -1,0 +1,2 @@
+export const metadata={title:'利用規約・プライバシーポリシー | 愛知トレカ買取ナビ',description:'愛知トレカ買取ナビの利用規約、プライバシーポリシー、免責事項です。'};
+export default function PolicyPage(){return <><div className="grid grid3"><div className="card"><h2>利用規約</h2><p>価格情報は参考値であり、店舗での買取価格を保証しない旨を明記します。</p></div><div className="card"><h2>プライバシーポリシー</h2><p>広告Cookie、アクセス解析、ログイン情報、保有カード情報の扱いを記載します。</p></div><div className="card"><h2>免責事項</h2><p>買取価格は投稿時点の情報で、状態・在庫・店舗判断により変動することを明記します。</p></div></div><div style={{height:16}}/><div className="notice warning">広告掲載するなら、運営者情報・お問い合わせ・プライバシーポリシーは最初から用意した方が安全です。</div></>}
