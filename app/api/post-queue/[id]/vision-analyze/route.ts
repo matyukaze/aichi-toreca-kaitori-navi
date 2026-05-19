@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import OpenAI from "openai";
-import { createSupabaseServiceClient, hasSupabaseEnv } from "@/lib/supabase/server";
+import {
+  createSupabaseServiceClient,
+  hasSupabaseEnv
+} from "@/lib/supabase/server";
 
 type AiCandidate = {
   card_name: string;
@@ -22,28 +25,31 @@ function stripCodeFence(text: string) {
 function normalizeCandidates(input: unknown): AiCandidate[] {
   if (!Array.isArray(input)) return [];
 
-  return input
-    .map((row) => {
-      if (!row || typeof row !== "object") return null;
+  const rows: AiCandidate[] = [];
 
-      const r = row as Record<string, unknown>;
-      const card_name = String(r.card_name || "").trim();
-      const card_number = r.card_number ? String(r.card_number).trim() : null;
-      const tcg_type = String(r.tcg_type || "その他").trim();
-      const price_yen = Number(r.price_yen || 0);
-      const confidence = Number(r.confidence ?? 0.5);
+  for (const row of input) {
+    if (!row || typeof row !== "object") continue;
 
-      if (!card_name || !price_yen || price_yen <= 0) return null;
+    const r = row as Record<string, unknown>;
 
-      return {
-        card_name,
-        card_number,
-        tcg_type,
-        price_yen,
-        confidence: Math.max(0, Math.min(1, confidence))
-      };
-    })
-    .filter((row): row is AiCandidate => Boolean(row));
+    const card_name = String(r.card_name || "").trim();
+    const card_number = r.card_number ? String(r.card_number).trim() : null;
+    const tcg_type = String(r.tcg_type || "その他").trim();
+    const price_yen = Number(r.price_yen || 0);
+    const confidence = Number(r.confidence ?? 0.5);
+
+    if (!card_name || !price_yen || price_yen <= 0) continue;
+
+    rows.push({
+      card_name,
+      card_number,
+      tcg_type,
+      price_yen,
+      confidence: Math.max(0, Math.min(1, confidence))
+    });
+  }
+
+  return rows;
 }
 
 export async function POST(
@@ -124,6 +130,7 @@ export async function POST(
 - 「最大◯万円」「5%UP」「本日のみ有効」など、カード個別価格ではない文言は除外してください。
 - 同じカードを重複して返さないでください。
 - 価格やカード名が不明確なものは confidence を低めにしてください。
+- 画像が買取表でない場合は空配列 [] を返してください。
 `;
 
   try {
