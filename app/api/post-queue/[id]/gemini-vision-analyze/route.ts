@@ -25,29 +25,31 @@ function stripCodeFence(text: string) {
 function normalizeCandidates(input: unknown): AiCandidate[] {
   if (!Array.isArray(input)) return [];
 
-  return input
-    .map((row) => {
-      if (!row || typeof row !== "object") return null;
+  const rows: AiCandidate[] = [];
 
-      const r = row as Record<string, unknown>;
+  for (const row of input) {
+    if (!row || typeof row !== "object") continue;
 
-      const card_name = String(r.card_name || "").trim();
-      const card_number = r.card_number ? String(r.card_number).trim() : null;
-      const tcg_type = String(r.tcg_type || "その他").trim();
-      const price_yen = Number(r.price_yen || 0);
-      const confidence = Number(r.confidence ?? 0.5);
+    const r = row as Record<string, unknown>;
 
-      if (!card_name || !price_yen || price_yen <= 0) return null;
+    const card_name = String(r.card_name || "").trim();
+    const card_number = r.card_number ? String(r.card_number).trim() : null;
+    const tcg_type = String(r.tcg_type || "その他").trim();
+    const price_yen = Number(r.price_yen || 0);
+    const confidence = Number(r.confidence ?? 0.5);
 
-      return {
-        card_name,
-        card_number,
-        tcg_type,
-        price_yen,
-        confidence: Math.max(0, Math.min(1, confidence))
-      };
-    })
-    .filter((row): row is AiCandidate => Boolean(row));
+    if (!card_name || !price_yen || price_yen <= 0) continue;
+
+    rows.push({
+      card_name,
+      card_number,
+      tcg_type,
+      price_yen,
+      confidence: Math.max(0, Math.min(1, confidence))
+    });
+  }
+
+  return rows;
 }
 
 function inferMimeType(url: string, contentType: string | null) {
@@ -88,10 +90,7 @@ async function generateWithRetry({
   mimeType: string;
   base64Image: string;
 }) {
-  const models = [
-    "gemini-2.5-flash-lite",
-    "gemini-2.0-flash"
-  ];
+  const models = ["gemini-2.5-flash-lite", "gemini-2.0-flash"];
 
   let lastError: unknown = null;
 
