@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { parsePriceText } from "@/lib/price-parser";
-import { createSupabaseServiceClient, hasSupabaseEnv } from "@/lib/supabase/server";
+import {
+  createSupabaseServiceClient,
+  hasSupabaseEnv
+} from "@/lib/supabase/server";
 
 type CandidateRow = {
   card_name: string;
@@ -24,7 +27,8 @@ function yenTextToNumber(text: string) {
 }
 
 function extractPriceFallback(text: string): CandidateRow[] {
-  const matches = text.match(/[0-9]+(?:\.[0-9]+)?\s*万円|[0-9]{4,}\s*円?/g) || [];
+  const matches =
+    text.match(/[0-9]+(?:\.[0-9]+)?\s*万円|[0-9]{4,}\s*円?/g) || [];
 
   return matches
     .map((match, index) => {
