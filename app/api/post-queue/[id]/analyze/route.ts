@@ -30,20 +30,23 @@ function extractPriceFallback(text: string): CandidateRow[] {
   const matches =
     text.match(/[0-9]+(?:\.[0-9]+)?\s*万円|[0-9]{4,}\s*円?/g) || [];
 
-  return matches
-    .map((match, index) => {
-      const price = yenTextToNumber(match);
-      if (!price) return null;
+  const rows: CandidateRow[] = [];
 
-      return {
-        card_name: `カード名未設定 ${index + 1}`,
-        card_number: null,
-        tcg_type: "ポケカ",
-        price_yen: price,
-        confidence: 0.25
-      };
-    })
-    .filter((row): row is CandidateRow => Boolean(row));
+  matches.forEach((match, index) => {
+    const price = yenTextToNumber(match);
+
+    if (!price) return;
+
+    rows.push({
+      card_name: `カード名未設定 ${index + 1}`,
+      card_number: null,
+      tcg_type: "ポケカ",
+      price_yen: price,
+      confidence: 0.25
+    });
+  });
+
+  return rows;
 }
 
 export async function POST(
@@ -111,7 +114,10 @@ export async function POST(
       .insert(insertRows);
 
     if (insertError) {
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
+      return NextResponse.json(
+        { error: insertError.message },
+        { status: 500 }
+      );
     }
   }
 
